@@ -14,8 +14,24 @@ GASP is written in Python3. When invoked it will spin up *n* workers, where *n* 
 * GASP uses [tqdm](https://tqdm.github.io/) to print job progress to the terminal. 
 
 ### how do I use it? 
+* make sure you have python >= 3.6 installed.
+* it is recommended you use the `requirements.txt` file to create a `venv` to work in. See [this](https://docs.python-guide.org/dev/virtualenvs/#lower-level-virtualenv) for instructions on how to do that. 
+* syntax:
+```bash
+usage: gasp.py [-h] floor ceiling
+
+generates all possible combinations of printable characters, rates them with
+zxcvbn, and serializes by length and rating.
+
+positional arguments:
+  floor       floor of password size to generate.
+  ceiling     non-inclusive ceiling of password size to generate
+
+optional arguments:
+  -h, --help  show this help message and exit
+```
 
 
 ### other 
-* GASP is intended for educational and legal purposes only.
-*  
+* *GASP is intended for educational and legal purposes only.*
+

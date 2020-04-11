@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 # G.enerate A.nd S.core P.asswords
 # password generator that sorts and serializes output by zxcvn score
 # 11APR20
