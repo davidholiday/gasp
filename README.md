@@ -8,7 +8,7 @@ GASP, unlike rote brute-force generation methods, will score and order its resul
 
 ### how does it work? 
 GASP is written in Python3. When invoked it will spin up *n* workers, where *n* is the number of cores on your machine. Those workers will 
-* compute every possible combination of printable characters between a floor and ceiling range you provide
+* compute every possible permutation of printable characters between a floor and ceiling range you provide
 * get the zxcvn score for each combination 
 * serialize the results to disk under a sub-directory named `results_{EPOCH_TIME}`. Files are named `passwords_length_{LENGTH}_scored_{SCORE}`.
 * GASP uses [tqdm](https://tqdm.github.io/) to print job progress to the terminal. 
