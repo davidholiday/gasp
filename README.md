@@ -34,4 +34,7 @@ optional arguments:
 
 ### other 
 * *GASP is intended for educational and legal purposes only.*
-
+* *TODO* add option to control the number of workers
+* *TODO* add option to restore a halted run
+* *TODO* add option to supply regex to provide generate passwords in accordance with a given password policy 
+* *TODO* add option to automagically filter results based on presence in another password file / directory of password files
