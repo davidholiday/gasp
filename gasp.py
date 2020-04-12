@@ -12,7 +12,7 @@ import math
 
 from tqdm import tqdm
 from multiprocessing import Pool, cpu_count
-from itertools import combinations
+from itertools import permutations
 from zxcvbn import zxcvbn
 
 
@@ -23,9 +23,9 @@ _CPU_COUNT = cpu_count()
 _RESULTS_FILENAME_TEMPLATE = 'passwords_length_{}_scored_{}'
 
 
-# because combinations returns an iterable of tuples
+# because permutations returns an iterable of tuples
 def get_passwords_generator(n, k):
-    passwords_iter = combinations(n, k)
+    passwords_iter = permutations(n, k)
     passwords_generator = (''.join(password) for password in passwords_iter)
     return passwords_generator
 
@@ -49,6 +49,11 @@ def get_binomial_coefficient(n, k):
     bc = math.factorial(n) / math.factorial(k) / math.factorial(n - k)
     return bc
 
+# ty stack exchange https://math.stackexchange.com/a/221041
+def get_permutation_count(n, k):
+    pc = math.factorial(n) / math.factorial(n - k)
+    return pc
+
 
 def main(args):
     results_directory = get_results_directory()
@@ -57,7 +62,7 @@ def main(args):
     ceiling = args.ceiling
     n = _CHARS_LIST
     for k in range(floor, ceiling):
-        expected_total = get_binomial_coefficient(len(n), k)
+        expected_total = get_permutation_count(len(n), k)
         passwords_generator = get_passwords_generator(n, k)
         results_iter = pool.imap_unordered(get_score, passwords_generator)
         with tqdm(total=expected_total) as pbar:
