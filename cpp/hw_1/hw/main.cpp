@@ -6,29 +6,38 @@
 
 int parse_program_options(int argc, char **argv) {
 	namespace po = boost::program_options;
-    po::options_description desc{"Allowed options"};
-
     
+    int floor;
+    int ceiling;
+    
+    po::options_description desc{"Allowed options"};    
     desc.add_options()
         ("help,h", "display help message")
-        ("floor", po::value<int>(), "floor of password size to generate")
-        ("ceiling", po::value<int>(), "non-inclusive ceiling of password size to generate")
+//        ("floor", po::value<int>(), "floor of password size to generate")
+//        ("ceiling", po::value<int>(), "non-inclusive ceiling of password size to generate")
     ;
     
-    po::positional_options_description floor_positional_option_description;
-    floor_positional_option_description.add("floor", 0);
+    po::options_description hidden_desc;
+    hidden_desc.add_options()
+        ("floor", po::value<int>(&floor)->required(), "floor of password size to generate")
+        ("ceiling", po::value<int>(&ceiling)->required(), "non-inclusive ceiling of password size to generate")
+    ;
+
+    po::options_description all_desc;
+    all_desc.add(desc);
+    all_desc.add(hidden_desc);
     
-    po::positional_options_description ceiling_positional_option_description;
-    ceiling_positional_option_description.add("ceiling", 1);
-    
-    po::command_line_parser parser{argc, argv};
-    parser.options(desc).positional(floor_positional_option_description).allow_unregistered();
-    parser.options(desc).positional(ceiling_positional_option_description).allow_unregistered();
-    
-    po::parsed_options parsed_options = parser.run();
+    po::positional_options_description positional_desc;
+    positional_desc.add("floor", 1);
+    positional_desc.add("ceiling", 2);
     
     po::variables_map vm;
-    po::store(parsed_options, vm);
+    
+    po::parsed_options parsed = 
+        po::command_line_parser(argc, argv).options(all_desc)
+                                           .positional(positional_desc)
+                                           .run();
+    po::store(parsed, vm);
     po::notify(vm);
     
     if (vm.count("help")) {
