@@ -1,17 +1,16 @@
-//#include <stdio.h>
-//#include <cstdlib> // for EXIT_SUCCESS and EXIT_FAILURE
-//
-//int main(int argc, char **argv)
-//{
-//	printf("hello world\n");
-//	return EXIT_SUCCESS;
-//}
-#include <iostream>
-#include <boost/array.hpp>
+#include <stdio.h>
+#include <cstdlib> // for EXIT_SUCCESS and EXIT_FAILURE
+#include <boost/program_options.hpp>
 
-using namespace std;
-int main(){
-  boost::array<int, 4> arr = {{1,2,3,4}};
-  cout << "hi" << arr[0];
-  return 0;
+int main(int argc, char **argv) {
+	namespace po = boost::program_options;
+    po::options_description desc{"Allowed options"};
+    desc.add_options()
+        ("help", "display help message")
+        ("floor", po::value<int>(), "floor of password size to generate")
+        ("ceiling", po::value<int>(), "non-inclusive ceiling of password size to generate")
+    ;
+    
+	return EXIT_SUCCESS;
 }
+
