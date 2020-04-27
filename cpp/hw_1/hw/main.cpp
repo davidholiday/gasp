@@ -31,17 +31,22 @@ int parse_program_options(int argc, char **argv) {
     
     try {
         
-        po::parsed_options parsed = 
-            po::command_line_parser(argc, argv).options(desc)
-                                               .run();
+        po::command_line_parser parser = po::command_line_parser(argc, argv).options(desc);
+        po::parsed_options parsed = parser.run();
         po::store(parsed, vm);
         po::notify(vm);
         
-        // respond to caller input
         if (vm.count("help")) {
             std::cout << desc_txt << "\n\n";
             std::cout << desc << "\n";
-        }       
+        }      
+
+        if ( !(vm.count("floor") && vm.count("ceiling")) ) {
+            throw std::invalid_argument("both floor and ceiling parameters must be specified");
+        }
+
+
+ 
     } catch (std::exception &ex) {
         std::cerr << ex.what() << "\n\n";
         std::cout << desc_txt << "\n\n";
