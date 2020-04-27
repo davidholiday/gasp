@@ -7,7 +7,7 @@
 #define OUT
 
 
-int parse_program_options(int argc, char **argv, OUT int& floorOut, OUT int& ceilingOut) {
+int parseArgs(int argc, char **argv, OUT int& floorOut, OUT int& ceilingOut) {
 
     int rc = EXIT_SUCCESS;
     namespace po = boost::program_options;
@@ -76,9 +76,9 @@ int main(int argc, char **argv) {
     int rc = EXIT_SUCCESS;
     
     int floor, ceiling;
-    int parse_program_options_rc = parse_program_options(argc, argv, floor, ceiling);
+    int parseArgsRc = parseArgs(argc, argv, OUT floor, OUT ceiling);
     
-    if (parse_program_options_rc == EXIT_FAILURE) {
+    if (parseArgsRc == EXIT_FAILURE) {
         rc = EXIT_FAILURE;
     } else {
         std::cout << "floor value is: " << floor << "   ceiling value is: " << ceiling << "\n";
