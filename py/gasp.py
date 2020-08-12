@@ -2,7 +2,7 @@
 
 # G.enerate A.nd S.core P.asswords
 # password generator that sorts and serializes output by zxcvn score
-# 11APR20
+# 12AUG20
 
 
 import argparse
@@ -12,7 +12,7 @@ import math
 
 from tqdm import tqdm
 from multiprocessing import Pool, cpu_count
-from itertools import permutations
+from itertools import product
 from zxcvbn import zxcvbn
 
 
@@ -22,10 +22,13 @@ _CPU_COUNT = cpu_count()
 
 _RESULTS_FILENAME_TEMPLATE = 'passwords_length_{}_scored_{}'
 
+_FLUSH_THRESHOLD = 100000000
+
 
 # because permutations returns an iterable of tuples
 def get_passwords_generator(n, k):
-    passwords_iter = permutations(n, k)
+    #passwords_iter = permutations(n, k)
+    passwords_iter = product(n, repeat=k)
     passwords_generator = (''.join(password) for password in passwords_iter)
     return passwords_generator
 
@@ -49,10 +52,20 @@ def get_binomial_coefficient(n, k):
     bc = math.factorial(n) / math.factorial(k) / math.factorial(n - k)
     return bc
 
+
 # ty stack exchange https://math.stackexchange.com/a/221041
 def get_permutation_count(n, k):
     pc = math.factorial(n) / math.factorial(n - k)
     return pc
+
+
+def serialize_results_dict(results_dict):
+    for k, v in results_dict.items():
+        for e in v:
+            with open(k, 'a') as f:
+                f.write(e + '\n')
+
+    results_dict = {}
 
 
 def main(args):
@@ -65,16 +78,36 @@ def main(args):
         expected_total = get_permutation_count(len(n), k)
         passwords_generator = get_passwords_generator(n, k)
         results_iter = pool.imap_unordered(get_score, passwords_generator)
+        results_dict = {}
+        buffer_size = 0
         with tqdm(total=expected_total) as pbar:
             for result in results_iter:
                 score = result[0]
                 password = result[1]
                 filename = _RESULTS_FILENAME_TEMPLATE.format(k, score)
                 path = results_directory + filename
-                with open(path, 'a') as f:
-                    f.write(password + '\n')
-
                 pbar.update(1)
+
+                # we only want to serialize passwords scored lower than four. the reason is
+                # we can infer that anything not serialized has a score of four and the set of
+                # passwords scored 1, 2, or 3 is much smaller than the set of things scored
+                # 4 (and thus is more manageable list).
+                if score == 4:
+                    continue
+
+                if path in results_dict.keys():
+                    results_dict[path].append(password)
+                else:
+                    results_dict[path] = [password]
+
+                if buffer_size > _FLUSH_THRESHOLD:
+                    serialize_results_dict(results_dict)
+                    buffer_size = 0
+
+                buffer_size+= 1
+
+        serialize_results_dict(results_dict)
+
 
 
 if __name__ == "__main__":
