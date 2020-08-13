@@ -16,8 +16,8 @@ from itertools import product
 from zxcvbn import zxcvbn
 
 
-_CHARS_LIST = list(' !"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~')
-
+#_CHARS_LIST = list(' !"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~')
+_CHARS_LIST = list('ABC')
 _CPU_COUNT = cpu_count()
 
 _RESULTS_FILENAME_TEMPLATE = 'passwords_length_{}_scored_{}'
@@ -59,6 +59,15 @@ def get_permutation_count(n, k):
     return pc
 
 
+# ty internets 
+# https://study.com/academy/answer/how-many-elements-are-in-the-cartesian-product-axb.html
+# https://mathhelpforum.com/threads/cardinality-of-a-cartesian-product.217325/
+#
+def get_cartesian_product_cardinality(n, k):
+    # we're squaring 'n' because the set of things to choose from can be repeated n times
+    return (n**2) * k
+
+
 def serialize_results_dict(results_dict):
     for k, v in results_dict.items():
         for e in v:
@@ -75,7 +84,7 @@ def main(args):
     ceiling = args.ceiling
     n = _CHARS_LIST
     for k in range(floor, ceiling):
-        expected_total = get_permutation_count(len(n), k)
+        expected_total = get_cartesian_product_cardinality(len(n), k)
         passwords_generator = get_passwords_generator(n, k)
         results_iter = pool.imap_unordered(get_score, passwords_generator)
         results_dict = {}
