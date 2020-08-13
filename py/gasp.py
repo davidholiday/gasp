@@ -10,20 +10,22 @@ import os
 import time
 import math
 
+from stopwatch import Stopwatch
 from tqdm import tqdm
 from multiprocessing import Pool, cpu_count
 from itertools import product
 from zxcvbn import zxcvbn
 
 
-#_CHARS_LIST = list(' !"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~')
-_CHARS_LIST = list('ABC')
+_CHARS_LIST = list(' !"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~')
+
 _CPU_COUNT = cpu_count()
 
 _RESULTS_FILENAME_TEMPLATE = 'passwords_length_{}_scored_{}'
 
-_FLUSH_THRESHOLD = 100000000
+_FLUSH_THRESHOLD = 1000000
 
+_TARGET_CHUNK_SIZE = 1000
 
 # because permutations returns an iterable of tuples
 def get_passwords_generator(n, k):
@@ -64,11 +66,11 @@ def get_permutation_count(n, k):
 # https://mathhelpforum.com/threads/cardinality-of-a-cartesian-product.217325/
 #
 def get_cartesian_product_cardinality(n, k):
-    # we're squaring 'n' because the set of things to choose from can be repeated n times
-    return (n**2) * k
+    return n**k
 
 
 def serialize_results_dict(results_dict):
+    print("serializing password buffer to disk...")
     for k, v in results_dict.items():
         for e in v:
             with open(k, 'a') as f:
@@ -83,12 +85,19 @@ def main(args):
     floor = args.floor
     ceiling = args.ceiling
     n = _CHARS_LIST
+    stopwatch = Stopwatch()
+    stopwatch.start()
     for k in range(floor, ceiling):
         expected_total = get_cartesian_product_cardinality(len(n), k)
+        chunk_size = _TARGET_CHUNK_SIZE if (expected_total / _CPU_COUNT) >= _TARGET_CHUNK_SIZE else 1
         passwords_generator = get_passwords_generator(n, k)
-        results_iter = pool.imap_unordered(get_score, passwords_generator)
+        results_iter = pool.imap_unordered(get_score, passwords_generator, chunksize=chunk_size)
         results_dict = {}
         buffer_size = 0
+
+        print("pool size is: ", _CPU_COUNT)
+        print("chunksize is: ", chunk_size)
+        print("generating scored passwords...")
         with tqdm(total=expected_total) as pbar:
             for result in results_iter:
                 score = result[0]
@@ -116,7 +125,9 @@ def main(args):
                 buffer_size+= 1
 
         serialize_results_dict(results_dict)
-
+    
+    stopwatch.stop()
+    print("done! elapsed time: ", stopwatch)
 
 
 if __name__ == "__main__":
