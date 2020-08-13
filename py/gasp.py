@@ -157,7 +157,7 @@ def main(args):
     stopwatch.start()
     for k in range(floor, ceiling):
         expected_total = get_cartesian_product_cardinality(len(n), k)
-        chunk_size = 1 #_TARGET_CHUNK_SIZE if (expected_total / _CPU_COUNT) >= _TARGET_CHUNK_SIZE else 1
+        chunk_size = _TARGET_CHUNK_SIZE if (expected_total / _CPU_COUNT) >= _TARGET_CHUNK_SIZE else 1
         passwords_generator = get_passwords_generator(n, k)
         results_iter = pool.imap_unordered(get_score, passwords_generator, chunksize=chunk_size)
         results_dict = {}
