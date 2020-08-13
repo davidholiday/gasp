@@ -27,6 +27,7 @@ _FLUSH_THRESHOLD = 1000000
 
 _TARGET_CHUNK_SIZE = 1000
 
+
 # because permutations returns an iterable of tuples
 def get_passwords_generator(n, k):
     #passwords_iter = permutations(n, k)
@@ -77,6 +78,66 @@ def serialize_results_dict(results_dict):
                 f.write(e + '\n')
 
     results_dict = {}
+
+
+# *!* ONLY WORKS IF IMAP IS SET TO RETURN AN ORDERED SET OF RESULTS 
+#
+# assumes the following method of generating the cartesian product
+#   GIVEN   
+#   - a set of choices 'n'
+#   - a number of things 'k' to select from 'n'
+#   - multiple instances of the same member of 'n' can be selected
+#   - each selection from 'n' is denoted by a pointer 
+#   - each pointer is uniquely identified with a number (the first choice is pointer(1), the second,  pointer(2)...)
+#   - each pointer starts at index 0 of 'n'
+#   THEN FOR EACH ITERATION
+#   - shift pointer with the highest identifier to the right one place
+#   - if shifted pointer is out of bounds
+#     - reset that pointer's position to index 0
+#     - shift pointer with the next highest identifier to the right one place
+#     - if that pointer goes out of bounds, repeat 
+#
+# in effect, what happens is that the pointer with the highest identifier
+#   - shifts every (len(n) **0) time steps
+#   - resets to index 0 every (len(n) ** 1) time steps 
+# for the pointer with the next highest identifer
+#   - shifts every (len(n) **1) time steps (the reset period for the pointer with the next highest identifier)
+#   - resets to index - every (len(n) ** 2) time steps
+# etc... 
+# 
+# another way to think of this is that the pointer with the highest identifier moves every time step. the pointers 
+# will reset to index zero every time the fully traverse 'n'. the pointer with the second-highest identifier can't 
+# move until the pointer with the highest identifer traverses the list. the pointer with the third-highest identifier
+# can't move until the pointer with the second-highest identifier traverses the list. etc etc etc. therefore, every
+# pointer's movements (except the pointer with the highest identifier) can be computed  as a function of the movement 
+# pattern of the pointer with an identifer one greater than itself. 
+# 
+# hope this helps you remember future me. 
+# https://youtu.be/fHAOWLhrxhQ?t=47
+# 
+def get_k_indexes_for_iteration(iteration, n, k):
+    results_dict = {}
+    shift_period_exponent = 0
+    reset_period_exponent = 1
+    for i in range(k, 0, -1):
+        shift_period = n**shift_period_exponent
+        reset_period = n**reset_period_exponent
+        time_steps_since_last_reset = iteration % reset_period
+        shifts_since_last_reset = time_steps_since_last_reset // shift_period
+        results_dict[i] = shifts_since_last_reset
+   
+        shift_period_exponent += 1
+        reset_period_exponent += 1
+       
+        print('for pointer number: ', i)
+        print('shift_period is: ', shift_period)
+        print('reset_period is: ', reset_period)
+        print('time_steps_since_last_reset is: ', time_steps_since_last_reset)
+        print('shifts_since_last_reset is: ', shifts_since_last_reset)
+        print('---')
+    
+    return results_dict
+
 
 
 def main(args):
