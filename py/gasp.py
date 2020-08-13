@@ -9,6 +9,7 @@ import argparse
 import os
 import time
 import math
+import json
 
 from stopwatch import Stopwatch
 from tqdm import tqdm
@@ -21,7 +22,7 @@ _CHARS_LIST = list(' !"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ
 
 _CPU_COUNT = cpu_count()
 
-_RESULTS_FILENAME_TEMPLATE = 'passwords_length_{}_scored_{}'
+_RESULTS_FILENAME_TEMPLATE = 'passwords_length_{}_scored_{}.json'
 
 _FLUSH_THRESHOLD = 1000000
 
@@ -73,13 +74,18 @@ def get_cartesian_product_cardinality(n, k):
 def serialize_results_dict(results_dict, print_message=True):
     if print_message:
         print("serializing password buffer to disk...")
+    
+    for k, v in results_dict.items():
+        with open(k, 'a') as f:
+            json.dump(v, f)
+
+    # this is too slow --v
+    """
     for k, v in results_dict.items():
         for e in v:
             with open(k, 'a') as f:
                 f.write(e + '\n')
-
-    results_dict = {}
-
+    """
 
 # *!* ONLY WORKS IF IMAP IS SET TO RETURN AN ORDERED SET OF RESULTS 
 #
@@ -151,7 +157,7 @@ def main(args):
     stopwatch.start()
     for k in range(floor, ceiling):
         expected_total = get_cartesian_product_cardinality(len(n), k)
-        chunk_size = _TARGET_CHUNK_SIZE if (expected_total / _CPU_COUNT) >= _TARGET_CHUNK_SIZE else 1
+        chunk_size = 1 #_TARGET_CHUNK_SIZE if (expected_total / _CPU_COUNT) >= _TARGET_CHUNK_SIZE else 1
         passwords_generator = get_passwords_generator(n, k)
         results_iter = pool.imap_unordered(get_score, passwords_generator, chunksize=chunk_size)
         results_dict = {}
@@ -182,6 +188,7 @@ def main(args):
 
                 if buffer_size > _FLUSH_THRESHOLD:
                     serialize_results_dict(results_dict, print_message=False)
+                    results_dict = {}
                     buffer_size = 0
 
                 buffer_size+= 1
