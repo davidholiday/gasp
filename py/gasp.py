@@ -70,8 +70,9 @@ def get_cartesian_product_cardinality(n, k):
     return n**k
 
 
-def serialize_results_dict(results_dict):
-    print("serializing password buffer to disk...")
+def serialize_results_dict(results_dict, print_message=True):
+    if print_message:
+        print("serializing password buffer to disk...")
     for k, v in results_dict.items():
         for e in v:
             with open(k, 'a') as f:
@@ -180,7 +181,7 @@ def main(args):
                     results_dict[path] = [password]
 
                 if buffer_size > _FLUSH_THRESHOLD:
-                    serialize_results_dict(results_dict)
+                    serialize_results_dict(results_dict, print_message=False)
                     buffer_size = 0
 
                 buffer_size+= 1
