@@ -31,7 +31,6 @@ _TARGET_CHUNK_SIZE = 1000
 
 # because permutations returns an iterable of tuples
 def get_passwords_generator(n, k):
-    #passwords_iter = permutations(n, k)
     passwords_iter = product(n, repeat=k)
     passwords_generator = (''.join(password) for password in passwords_iter)
     return passwords_generator
@@ -74,18 +73,13 @@ def get_cartesian_product_cardinality(n, k):
 def serialize_results_dict(results_dict, print_message=True):
     if print_message:
         print("serializing password buffer to disk...")
-    
+
+    # *!* this has a bug in it - this will concat valid json blocks together to form one big invalid json file
+
     for k, v in results_dict.items():
         with open(k, 'a') as f:
             json.dump(v, f)
 
-    # this is too slow --v
-    """
-    for k, v in results_dict.items():
-        for e in v:
-            with open(k, 'a') as f:
-                f.write(e + '\n')
-    """
 
 # *!* ONLY WORKS IF IMAP IS SET TO RETURN AN ORDERED SET OF RESULTS 
 #
@@ -119,7 +113,7 @@ def serialize_results_dict(results_dict, print_message=True):
 # pointer's movements (except the pointer with the highest identifier) can be computed  as a function of the movement 
 # pattern of the pointer with an identifer one greater than itself. 
 # 
-# hope this helps you remember future me. 
+# hope this helps you remember, future me. 
 # https://youtu.be/fHAOWLhrxhQ?t=47
 # 
 def get_k_indexes_for_iteration(iteration, n, k):
@@ -136,15 +130,29 @@ def get_k_indexes_for_iteration(iteration, n, k):
         shift_period_exponent += 1
         reset_period_exponent += 1
        
-        print('for pointer number: ', i)
-        print('shift_period is: ', shift_period)
-        print('reset_period is: ', reset_period)
-        print('time_steps_since_last_reset is: ', time_steps_since_last_reset)
-        print('shifts_since_last_reset is: ', shifts_since_last_reset)
-        print('---')
+        # print('for pointer number: ', i)
+        # print('shift_period is: ', shift_period)
+        # print('reset_period is: ', reset_period)
+        # print('time_steps_since_last_reset is: ', time_steps_since_last_reset)
+        # print('shifts_since_last_reset is: ', shifts_since_last_reset)
+        # print('---')
     
     return results_dict
 
+
+def get_k_indexes_for_iteration_generator(floor, ceiling, n, k):
+    for i in range(floor, ceiling):
+        yield get_k_indexes_for_iteration(i, n, k)
+
+
+def get_password_for_indexes_dict(indexes_dict):
+    password_iterable = [
+        _CHARS_LIST[indexes_dict[i]]
+        for i
+        in range(1, len(indexes_dict) + 1)
+    ]
+    
+    return ''.join(password_iterable)   
 
 
 def main(args):
