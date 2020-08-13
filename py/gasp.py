@@ -29,7 +29,6 @@ _FLUSH_THRESHOLD = 1000000
 _TARGET_CHUNK_SIZE = 1000
 
 
-# because permutations returns an iterable of tuples
 def get_passwords_generator(n, k):
     passwords_iter = product(n, repeat=k)
     passwords_generator = (''.join(password) for password in passwords_iter)
@@ -168,7 +167,7 @@ def main(args):
         chunk_size = _TARGET_CHUNK_SIZE if (expected_total / _CPU_COUNT) >= _TARGET_CHUNK_SIZE else 1
         passwords_generator = get_passwords_generator(n, k)
         results_iter = pool.imap_unordered(get_score, passwords_generator, chunksize=chunk_size)
-        results_dict = {}
+        results_dict = {0:0, 1:0, 2:0, 3:0, 4:0} # <-- this is temporary to serialize only scores for now
         buffer_size = 0
 
         print("pool size is: ", _CPU_COUNT)
@@ -178,9 +177,23 @@ def main(args):
             for result in results_iter:
                 score = result[0]
                 password = result[1]
-                filename = _RESULTS_FILENAME_TEMPLATE.format(k, score)
-                path = results_directory + filename
+
+                results_dict[score] += 1
+                # temporarily disabled to record only the score count
+                #
+                #filename = _RESULTS_FILENAME_TEMPLATE.format(k, score)
+                #path = results_directory + filename
+                #
+                #
+
                 pbar.update(1)
+
+                
+               
+                '''
+                *!*
+                temporarily disabling this section of code so as to only record the counts of scores 
+
 
                 # we only want to serialize passwords scored lower than four. the reason is
                 # we can infer that anything not serialized has a score of four and the set of
@@ -202,7 +215,13 @@ def main(args):
                 buffer_size+= 1
 
         serialize_results_dict(results_dict)
-    
+        '''
+        path = results_directory + "score_counts_for_passwords_of_length_" + str(k) 
+        for key, v in results_dict.items():
+            with open(path, 'a') as f:
+                f.write(str(key) + ',' + str(v) + '\n')
+
+
     stopwatch.stop()
     print("done! elapsed time: ", stopwatch)
 
